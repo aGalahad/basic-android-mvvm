@@ -37,7 +37,6 @@ class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase,
 
     override fun onCleared() {
         super.onCleared()
-        Log.e("ARMTIMUS", "onCleared")
         compositeDisposable.clear()
     }
 
