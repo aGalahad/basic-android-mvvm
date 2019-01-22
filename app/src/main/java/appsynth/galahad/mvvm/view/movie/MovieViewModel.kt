@@ -21,53 +21,68 @@ class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase,
 
     private val compositeDisposable = CompositeDisposable()
     private val movieDetail = MutableLiveData<MovieDetail>()
-    private val relateMovieList = MutableLiveData<List<MovieDetail>>()
     private val movieSourceData = MutableLiveData<String>()
-    private val isLoading = MutableLiveData<Boolean>()
+    private val movieDetailIsLoading = MutableLiveData<Boolean>()
 
-    fun isLoading() : LiveData<Boolean> = isLoading
-    fun observeMovieDetail() : LiveData<MovieDetail> = movieDetail
-    fun observeMovieSourceData() : LiveData<String> = movieSourceData
-    fun observeRelateMovieList(): LiveData<List<MovieDetail>> = relateMovieList
+    private val relateMovieList = MutableLiveData<List<MovieDetail>>()
+    private val relateMovieListIsLoading = MutableLiveData<Boolean>()
+    private var currentMovieId = ""
+
+    fun getMovieDetailIsLoading() : LiveData<Boolean> = movieDetailIsLoading
+    fun getMovieDetail() : LiveData<MovieDetail> = movieDetail
+    fun getMovieSourceData() : LiveData<String> = movieSourceData
+    fun getRelateMovieList(): LiveData<List<MovieDetail>> = relateMovieList
+    fun getRelateMovieListIsLoading(): LiveData<Boolean> = relateMovieListIsLoading
+    fun getCurrentMovieId() = currentMovieId
 
     override fun onCleared() {
         super.onCleared()
-        Log.e("ARMTIMUS", "$TAG onCleared")
+        Log.e("ARMTIMUS", "onCleared")
         compositeDisposable.clear()
     }
 
     fun getMovieDetail(id: String) {
+        currentMovieId = id
         movieDetailUseCase.execute(movieId = id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe {
-                isLoading.value = true
+                movieDetailIsLoading.value = true
             }
             .subscribe({ response ->
-                response?.let {
-                    movieDetail.value = it
-                    movieSourceData.value = generateIFrame(url = it.playUrl ?: "")
-                    isLoading.value = false
+                response?.let { detail ->
+                    movieDetail.value = detail
+                    movieSourceData.value = generateIFrame(url = detail.playUrl ?: "")
+                    movieDetailIsLoading.value = false
                 }
             }, { throwable ->
-                isLoading.value = false
+                movieDetailIsLoading.value = false
             }).addTo(composite = compositeDisposable)
     }
 
     fun getRelateMovieList(id: String) {
+        currentMovieId = id
         relateMovieUseCase.execute(movieId = id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe {
+                relateMovieListIsLoading.value = true
+            }
             .subscribe({ response ->
-                relateMovieList.value = response
+                response?.let {
+                    relateMovieListIsLoading.value = false
+                    relateMovieList.value = response
+                }
             }, { throwable ->
-
+                relateMovieListIsLoading.value = false
             }).addTo(composite = compositeDisposable)
     }
 
     private fun generateIFrame(url: String): String {
-        val iFrame = "<iframe src=\"https://www.youtube.com/embed/$url\" width=100% height=100% frameborder=0 style=border:none;overflow:hidden scrolling=no></iframe>"
-        val playUrl = "<style> body {" +
+        val iFrame = "<iframe src=\"https://www.youtube.com/embed/$url\" " +
+                "width=100% height=100% frameborder=0 style=border:none;overflow:hidden scrolling=no></iframe>"
+
+        return "<style> body {" +
                 "  background: black; }" +
                 "  .video-container {" +
                 "  position: absolute;" +
@@ -78,7 +93,5 @@ class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase,
                 "  left: 50%;" +
                 "  transform: translate(-50%,-50%); }" +
                 "</style>" + "<body> <div class=video-container > " + iFrame + " </div> </body>"
-
-        return playUrl
     }
 }
