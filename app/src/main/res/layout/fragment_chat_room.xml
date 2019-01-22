@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:background="@color/chatBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <FrameLayout
+            android:visibility="visible"
+            android:id="@+id/contentView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+                android:layout_weight="1"
+                android:id="@+id/messageRecycleView"
+                android:paddingBottom="80dp"
+                android:clipToPadding="false"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <LinearLayout
+                android:background="@drawable/chat_box_background"
+                android:orientation="horizontal"
+                android:layout_gravity="bottom"
+                android:layout_weight="0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <EditText
+                    android:id="@+id/messageEditText"
+                    android:layout_weight="1"
+                    android:hint="Message..."
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@android:color/white"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            <ImageView
+                    android:id="@+id/sendButton"
+                    android:src="@drawable/baseline_chat_bubble_black_24"
+                    android:background="@drawable/send_button_disable_background"
+                    android:layout_weight="0"
+                    android:layout_margin="5dp"
+                    android:padding="7dp"
+                    android:tint="@android:color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </FrameLayout>
+
+    <ProgressBar
+            android:visibility="gone"
+            android:id="@+id/progressView"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</FrameLayout>
