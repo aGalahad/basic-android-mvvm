@@ -12,8 +12,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
-class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase,
-                     private val relateMovieUseCase: RelateMovieUseCase) : ViewModel() {
+class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase) : ViewModel() {
 
     companion object {
         private const val TAG = "MovieViewModel"
@@ -22,17 +21,13 @@ class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase,
     private val compositeDisposable = CompositeDisposable()
     private val movieDetail = MutableLiveData<MovieDetail>()
     private val movieSourceData = MutableLiveData<String>()
-    private val movieDetailIsLoading = MutableLiveData<Boolean>()
+    private val isLoading = MutableLiveData<Boolean>()
 
-    private val relateMovieList = MutableLiveData<List<MovieDetail>>()
-    private val relateMovieListIsLoading = MutableLiveData<Boolean>()
     private var currentMovieId = ""
 
-    fun getMovieDetailIsLoading() : LiveData<Boolean> = movieDetailIsLoading
+    fun isLoading() : LiveData<Boolean> = isLoading
     fun getMovieDetail() : LiveData<MovieDetail> = movieDetail
     fun getMovieSourceData() : LiveData<String> = movieSourceData
-    fun getRelateMovieList(): LiveData<List<MovieDetail>> = relateMovieList
-    fun getRelateMovieListIsLoading(): LiveData<Boolean> = relateMovieListIsLoading
     fun getCurrentMovieId() = currentMovieId
 
     override fun onCleared() {
@@ -46,34 +41,16 @@ class MovieViewModel(private val movieDetailUseCase: MovieDetailUseCase,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe {
-                movieDetailIsLoading.value = true
+                isLoading.value = true
             }
             .subscribe({ response ->
                 response?.let { detail ->
                     movieDetail.value = detail
                     movieSourceData.value = generateIFrame(url = detail.playUrl ?: "")
-                    movieDetailIsLoading.value = false
+                    isLoading.value = false
                 }
             }, { throwable ->
-                movieDetailIsLoading.value = false
-            }).addTo(composite = compositeDisposable)
-    }
-
-    fun getRelateMovieList(id: String) {
-        currentMovieId = id
-        relateMovieUseCase.execute(movieId = id)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                relateMovieListIsLoading.value = true
-            }
-            .subscribe({ response ->
-                response?.let {
-                    relateMovieListIsLoading.value = false
-                    relateMovieList.value = response
-                }
-            }, { throwable ->
-                relateMovieListIsLoading.value = false
+                isLoading.value = false
             }).addTo(composite = compositeDisposable)
     }
 

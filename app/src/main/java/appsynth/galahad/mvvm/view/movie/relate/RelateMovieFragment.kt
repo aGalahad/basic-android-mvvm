@@ -4,16 +4,13 @@ import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import appsynth.galahad.mvvm.R
 import appsynth.galahad.mvvm.api.repo.MovieRepoImpl
 import appsynth.galahad.mvvm.extenstions.getViewModel
-import appsynth.galahad.mvvm.usecase.MovieDetailUseCaseImpl
 import appsynth.galahad.mvvm.usecase.RelateMovieUseCaseImpl
-import appsynth.galahad.mvvm.view.movie.MovieViewModel
 import appsynth.galahad.mvvm.view.movie.adapter.RelateMovieAdapter
 import kotlinx.android.synthetic.main.fragment_recent_movie.*
 
@@ -31,11 +28,10 @@ class RelateMovieFragment : Fragment() {
         }
     }
 
-    private val viewModel: MovieViewModel by lazy {
+    private val relateMovieViewModel: RelateMovieViewModel by lazy {
         getViewModel {
             val movieRepo = MovieRepoImpl()
-            MovieViewModel(
-                movieDetailUseCase = MovieDetailUseCaseImpl(movieRepo = movieRepo),
+            RelateMovieViewModel(
                 relateMovieUseCase = RelateMovieUseCaseImpl(movieRepo = movieRepo)
             )
         }
@@ -64,20 +60,19 @@ class RelateMovieFragment : Fragment() {
         initView()
 
         if (movieId.isNotEmpty()) {
-            viewModel.getRelateMovieList(id = movieId)
+            relateMovieViewModel.getRelateMovieList(id = movieId)
         }
     }
 
     private fun bindingViewModel() {
-        viewModel.getRelateMovieList().observe(this, Observer { movies ->
+        relateMovieViewModel.getRelateMovieList().observe(this, Observer { movies ->
             movies?.let {
                 relateMovieAdapter.setData(list = it)
                 relateMovieAdapter.notifyDataSetChanged()
             }
         })
 
-        viewModel.getRelateMovieListIsLoading().observe(this, Observer { loading ->
-            Log.e("ARMTIMUS", "RelateMovieFragment loading")
+        relateMovieViewModel.isLoading().observe(this, Observer { loading ->
             if (loading == true) {
                 progressView.visibility = View.VISIBLE
                 relateMovieRecycleView.visibility = View.GONE
